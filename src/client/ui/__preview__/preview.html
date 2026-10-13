@@ -1,0 +1,182 @@
+<!doctype html>
+<!--
+  Standalone harness for the asset library UI.
+
+  Run from the plugin root with:
+    npx vite --config src/client/ui/__preview__/vite.config.ts
+
+  It mounts the real AssetLibraryApp against synthetic fixtures; the data store
+  is aliased to ./fake-store so no IndexedDB or host route is needed.
+-->
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>素材库 UI 预览</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        /* Minimal stand-ins for the host theme tokens the panel consumes, so the
+           harness renders outside the DSH shell. Values are neutral greys only. */
+        --dsw-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        --dsw-font-family-code: ui-monospace, SFMono-Regular, Menlo, monospace;
+        --dsw-font-xxxs-11: 11px;
+        --dsw-font-xxs-12: 12px;
+        --dsw-font-xs-13: 13px;
+        --dsw-font-s-14: 14px;
+        --dsw-alias-bg-base: #ffffff;
+        --dsw-alias-bg-layer-1: #f7f8fa;
+        --dsw-alias-bg-layer-2: #eef0f4;
+        --dsw-alias-bg-overlay: #ffffff;
+        --dsw-alias-bg-mask-1: rgba(20, 22, 26, 0.72);
+        --dsw-alias-bg-mask-drop: rgba(255, 255, 255, 0.72);
+        --dsw-alias-fill-l2: #e6e9ee;
+        --dsw-alias-border-l1: #e2e5ea;
+        --dsw-alias-border-l2: #cfd4dc;
+        --dsw-alias-border-l3: #b6bcc6;
+        --dsw-alias-border-inverted: rgba(255, 255, 255, 0.45);
+        --dsw-alias-label-primary: #1c1f24;
+        --dsw-alias-label-secondary: #4a505a;
+        --dsw-alias-label-tertiary: #767d88;
+        --dsw-alias-label-quaternary: #9aa1ac;
+        --dsw-alias-label-primary-inverted: #ffffff;
+        --dsw-alias-label-primary-foreground: #ffffff;
+        --dsw-alias-label-dimmed: #767d88;
+        --dsw-alias-interactive-bg-hover: rgba(28, 31, 36, 0.06);
+        --dsw-alias-interactive-bg-active: rgba(28, 31, 36, 0.1);
+        --dsw-alias-interactive-bg-hover-solid: rgba(28, 31, 36, 0.14);
+        --dsw-alias-interactive-bg-hover-danger: rgba(200, 60, 60, 0.12);
+        --dsw-alias-state-business-primary: #2f6fd0;
+        --dsw-alias-state-business-tertiary: rgba(47, 111, 208, 0.14);
+        --dsw-alias-state-error-primary: #c0392b;
+        --dsw-alias-state-error-secondary: rgba(192, 57, 43, 0.1);
+        --dsw-alias-state-warn-primary: #d98b2b;
+        --dsw-alias-state-warn-label: #3a2a10;
+        --dsw-alias-button-primary-fill: #2f6fd0;
+        --dsw-alias-button-primary-hover: #2a63ba;
+        --dsw-alias-button-floating-fill: rgba(255, 255, 255, 0.18);
+        --dsw-alias-button-floating-hover: rgba(255, 255, 255, 0.3);
+        --dsw-alias-scrollbar-bg-l2: rgba(28, 31, 36, 0.18);
+        --dsw-alias-scrollbar-hover-l2: rgba(28, 31, 36, 0.3);
+        --dsw-alias-specific-menu: #ffffff;
+        --dsw-alias-markdown-code-block: #f0f2f5;
+        --dsw-mask-blur: 8px;
+        --dsw-shadow-lv1: 0 1px 2px rgba(16, 18, 22, 0.06);
+        --dsw-shadow-lv2: 0 4px 10px rgba(16, 18, 22, 0.1);
+        --dsw-shadow-lv3: 0 12px 32px rgba(16, 18, 22, 0.18);
+        --dsw-static-amber-400: #f0b429;
+        --dsw-static-amber-500: #d99413;
+        --ds-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+        --dsh-scrollbar-width: 10px;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --dsw-alias-bg-base: #16181c;
+          --dsw-alias-bg-layer-1: #1d2025;
+          --dsw-alias-bg-layer-2: #24282e;
+          --dsw-alias-bg-overlay: #24282e;
+          --dsw-alias-bg-mask-drop: rgba(39, 39, 48, 0.7);
+          --dsw-alias-fill-l2: #2b2f36;
+          --dsw-alias-border-l1: #2e333a;
+          --dsw-alias-border-l2: #3c424b;
+          --dsw-alias-border-l3: #4d545e;
+          --dsw-alias-label-primary: #eef0f4;
+          --dsw-alias-label-secondary: #b9bfc9;
+          --dsw-alias-label-tertiary: #8d949f;
+          --dsw-alias-label-quaternary: #6f757f;
+          --dsw-alias-interactive-bg-hover: rgba(255, 255, 255, 0.07);
+          --dsw-alias-interactive-bg-hover-solid: rgba(255, 255, 255, 0.14);
+          --dsw-alias-specific-menu: #24282e;
+          --dsw-alias-markdown-code-block: #1a1d21;
+        }
+      }
+
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: var(--dsw-alias-bg-base);
+        color: var(--dsw-alias-label-primary);
+        font-family: var(--dsw-font-family);
+      }
+
+      #shell {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+
+      #controls {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-bottom: 1px solid var(--dsw-alias-border-l1);
+        background: var(--dsw-alias-bg-layer-2);
+        font-size: 12px;
+      }
+
+      #controls button {
+        font: inherit;
+        padding: 3px 10px;
+        border: 1px solid var(--dsw-alias-border-l2);
+        border-radius: 999px;
+        background: var(--dsw-alias-bg-layer-1);
+        color: inherit;
+        cursor: pointer;
+      }
+
+      #controls button:hover {
+        background: var(--dsw-alias-interactive-bg-hover);
+      }
+
+      #mount {
+        flex: 1 1 auto;
+        min-height: 0;
+        position: relative;
+      }
+
+      /* Wallpaper scene (`?scene=wallpaper`): the mask control plus the real
+         gallery, which fills the rest of the mount. */
+      .scene-root {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        min-height: 0;
+      }
+
+      .scene-bar {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        border-bottom: 1px solid var(--dsw-alias-border-l1);
+        background: var(--dsw-alias-bg-layer-2);
+        font-size: 12px;
+      }
+
+      #log {
+        flex: 0 0 auto;
+        max-height: 84px;
+        overflow: auto;
+        padding: 6px 12px;
+        border-top: 1px solid var(--dsw-alias-border-l1);
+        background: var(--dsw-alias-bg-layer-2);
+        font-family: var(--dsw-font-family-code);
+        font-size: 11px;
+        color: var(--dsw-alias-label-secondary);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="shell">
+      <div id="controls"></div>
+      <div id="mount"></div>
+      <div id="log"></div>
+    </div>
+    <script type="module" src="./main.tsx"></script>
+  </body>
+</html>

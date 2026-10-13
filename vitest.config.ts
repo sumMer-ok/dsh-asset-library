@@ -1,0 +1,10 @@
+import { defineConfig } from 'vitest/config'
+
+export default defineConfig({
+  test: {
+    environment: 'node',
+    include: ['tests/**/*.spec.ts'],
+    globals: false,
+    // IndexedDB specs in tests/data import `fake-indexeddb` themselves; no setup file here.
+  },
+})

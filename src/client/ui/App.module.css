@@ -1,0 +1,429 @@
+/*
+ * Panel shell: root frame, toolbar with its filter groups, and the import
+ * call-to-action. Every colour is a DSH theme token so light and dark follow
+ * the host automatically.
+ */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--dsw-alias-bg-base);
+  color: var(--dsw-alias-label-primary);
+  font-family: var(--dsw-font-family);
+  font-size: var(--dsw-font-xs-13);
+}
+
+/* ---------- toolbar ---------- */
+
+.toolbar {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 20px 10px;
+  border-bottom: 1px solid var(--dsw-alias-border-l1);
+}
+
+.toolbarRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.searchWrap {
+  position: relative;
+  flex: 1 1 220px;
+  min-width: 180px;
+  max-width: 420px;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 10px;
+  color: var(--dsw-alias-label-tertiary);
+  pointer-events: none;
+  font-size: var(--dsw-font-xxs-12);
+}
+
+.searchInput {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 7px 30px 7px 28px;
+  border-radius: 999px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  background: var(--dsw-alias-bg-layer-1);
+  color: var(--dsw-alias-label-primary);
+  font-family: inherit;
+  font-size: var(--dsw-font-xs-13);
+  outline: none;
+  transition: border-color 120ms var(--ds-ease-in-out), background 120ms var(--ds-ease-in-out);
+}
+
+.searchInput::placeholder {
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.searchInput:focus-visible {
+  border-color: var(--dsw-alias-state-business-primary);
+  outline: 2px solid var(--dsw-alias-state-business-primary);
+  outline-offset: 1px;
+}
+
+.searchClear {
+  position: absolute;
+  right: 6px;
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--dsw-alias-label-tertiary);
+  cursor: pointer;
+  font-size: var(--dsw-font-xxs-12);
+  line-height: 1;
+}
+
+.searchClear:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-primary);
+}
+
+.spacer {
+  flex: 1 1 auto;
+  min-width: 8px;
+}
+
+/* ---------- chip groups ---------- */
+
+.chipGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.chipGroupLabel {
+  color: var(--dsw-alias-label-tertiary);
+  font-size: var(--dsw-font-xxs-12);
+  margin-right: 2px;
+  white-space: nowrap;
+}
+
+.chip {
+  border: 1px solid var(--dsw-alias-border-l2);
+  background: transparent;
+  color: var(--dsw-alias-label-secondary);
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-family: inherit;
+  font-size: var(--dsw-font-xxs-12);
+  line-height: 18px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 120ms var(--ds-ease-in-out), border-color 120ms var(--ds-ease-in-out),
+    color 120ms var(--ds-ease-in-out);
+}
+
+.chip:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-primary);
+}
+
+.chipActive {
+  background: var(--dsw-alias-state-business-tertiary);
+  border-color: var(--dsw-alias-state-business-primary);
+  color: var(--dsw-alias-label-primary);
+}
+
+.chipGlyph {
+  margin-right: 4px;
+}
+
+.tagChipCount {
+  margin-left: 4px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+/* ---------- select and small controls ---------- */
+
+.select {
+  appearance: none;
+  border: 1px solid var(--dsw-alias-border-l2);
+  background: var(--dsw-alias-bg-layer-1);
+  color: var(--dsw-alias-label-secondary);
+  border-radius: 8px;
+  padding: 5px 24px 5px 10px;
+  font-family: inherit;
+  font-size: var(--dsw-font-xxs-12);
+  cursor: pointer;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: right 11px center, right 7px center;
+  background-size: 4px 4px, 4px 4px;
+  background-repeat: no-repeat;
+}
+
+.select:focus-visible {
+  outline: 2px solid var(--dsw-alias-state-business-primary);
+  outline-offset: 1px;
+}
+
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--dsw-alias-label-secondary);
+  border-radius: 8px;
+  padding: 5px 9px;
+  font-family: inherit;
+  font-size: var(--dsw-font-xxs-12);
+  line-height: 18px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.iconButton:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-primary);
+}
+
+.iconButton[aria-pressed='true'] {
+  background: var(--dsw-alias-state-business-tertiary);
+  border-color: var(--dsw-alias-state-business-primary);
+  color: var(--dsw-alias-label-primary);
+}
+
+.iconButton:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.primaryButton {
+  border: 1px solid var(--dsw-alias-border-l2);
+  background: var(--dsw-alias-button-primary-fill);
+  color: var(--dsw-alias-label-primary-foreground);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-family: inherit;
+  font-size: var(--dsw-font-xs-13);
+  cursor: pointer;
+}
+
+.primaryButton:hover {
+  background: var(--dsw-alias-button-primary-hover);
+}
+
+.ghostButton {
+  border: 1px solid var(--dsw-alias-border-l2);
+  background: transparent;
+  color: var(--dsw-alias-label-secondary);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-family: inherit;
+  font-size: var(--dsw-font-xs-13);
+  cursor: pointer;
+}
+
+.ghostButton:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-primary);
+}
+
+.countLabel {
+  color: var(--dsw-alias-label-tertiary);
+  font-size: var(--dsw-font-xxs-12);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- search hit highlighting ---------- */
+
+.mark {
+  background: var(--dsw-alias-state-business-tertiary);
+  color: var(--dsw-alias-label-primary);
+  border-radius: 3px;
+  padding: 0 1px;
+}
+
+/* ---------- import call to action ---------- */
+
+.importBar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 20px;
+  border-bottom: 1px solid var(--dsw-alias-border-l1);
+  background: var(--dsw-alias-bg-layer-1);
+}
+
+.settingsAnchor {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+/* ---------- body ---------- */
+
+.body {
+  flex: 1 1 auto;
+  min-height: 0;
+  position: relative;
+  display: flex;
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- curation panel (collapsible) ---------- */
+
+.curation {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--dsw-alias-border-l1);
+  border-radius: 12px;
+  background: var(--dsw-alias-bg-layer-1);
+}
+
+.dateInput {
+  max-width: 150px;
+  padding: 5px 8px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 8px;
+  background: var(--dsw-alias-bg-base);
+  color: var(--dsw-alias-label-primary);
+  font-family: inherit;
+  font-size: var(--dsw-font-xxs-12);
+}
+
+.dateInput:focus-visible {
+  outline: 2px solid var(--dsw-alias-state-business-primary);
+  outline-offset: 1px;
+}
+
+/* Filters are narrowing the view while the panel itself is closed. */
+.iconButtonFlagged {
+  border-color: var(--dsw-alias-state-business-primary);
+  color: var(--dsw-alias-label-primary);
+}
+
+/* ---------- destructive action ---------- */
+
+.dangerButton {
+  border: 1px solid var(--dsw-alias-state-error-primary);
+  background: var(--dsw-alias-state-error-tertiary, transparent);
+  color: var(--dsw-alias-state-error-primary);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-family: inherit;
+  font-size: var(--dsw-font-xs-13);
+  cursor: pointer;
+}
+
+.dangerButton:hover {
+  background: var(--dsw-alias-interactive-bg-hover-danger);
+}
+
+.dangerButton:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* ---------- undo bar ---------- */
+
+.undoBar {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 9px 14px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 12px;
+  background: var(--dsw-alias-bg-overlay, var(--dsw-alias-bg-layer-1));
+  color: var(--dsw-alias-label-primary);
+  font-size: var(--dsw-font-xxs-12);
+  box-shadow: var(--dsw-shadow-lv3);
+  animation: al-undo-in 200ms cubic-bezier(0.2, 0.9, 0.25, 1.2) both;
+}
+
+@keyframes al-undo-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+
+/* ---------- light press spring (buttons and chips only) ---------- */
+
+.chip,
+.iconButton,
+.primaryButton,
+.ghostButton,
+.dangerButton {
+  transition:
+    background 120ms var(--ds-ease-in-out),
+    border-color 120ms var(--ds-ease-in-out),
+    color 120ms var(--ds-ease-in-out),
+    transform 200ms cubic-bezier(0.2, 0.9, 0.25, 1.2);
+}
+
+.chip:active,
+.iconButton:active,
+.primaryButton:active,
+.ghostButton:active,
+.dangerButton:active {
+  transform: scale(0.955);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chip,
+  .iconButton,
+  .primaryButton,
+  .ghostButton,
+  .dangerButton {
+    transition: background 120ms linear, border-color 120ms linear, color 120ms linear;
+  }
+
+  .chip:active,
+  .iconButton:active,
+  .primaryButton:active,
+  .ghostButton:active,
+  .dangerButton:active {
+    transform: none;
+  }
+
+  .undoBar {
+    animation: none;
+    transform: translateX(-50%);
+  }
+}

@@ -1,0 +1,24 @@
+# dsh-asset-library bundle patch
+#
+# Installed through the official CLI —
+#
+#   dsh plugin --profile desktop add dsh-asset-library
+#
+# — the command reconciles `dsh.profile.bundles` against installed packages
+# and, seeing this declaration, appends `dsh-asset-library` to the bundle
+# stack. The profile boot then merges THIS patch (a single `insert` of the
+# plugin row) exactly like a manual cordis.patch.yml mount line. The entry
+# `name` must equal the package name so the client-modules scan resolves the
+# package's ./client bundle and serves it at
+# /plugins/dsh-asset-library/client.js.
+#
+# The host half registers the exact route
+# /api/plugins/dsh-asset-library/file?path=<absolute path> on ctx.connection.fetch
+# (the same exact-Fetch registry as the core /api/file route), with Range support.
+# `routeMaxBytes` caps one response; raise it in the profile's own patch only
+# when the gallery must stream files larger than 64 MiB in a single request.
+- insert:
+    - id: asset-library
+      name: 'dsh-asset-library'
+      config:
+        routeMaxBytes: 67108864

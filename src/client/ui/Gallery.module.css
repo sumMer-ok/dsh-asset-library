@@ -1,0 +1,578 @@
+/*
+ * Exhibition-wall gallery: the wallpaper stage, the scrollable wall, the cards,
+ * and the per-card control surfaces.
+ *
+ * Every colour is a `--dsw-*` theme alias, so light and dark follow the host; the
+ * wallpaper mask likewise uses `--dsw-alias-bg-base`, which lightens the wall in
+ * light mode and darkens it in dark mode. The media box keeps a CSS-resolved
+ * height so the masonry layout never shifts while images decode.
+ */
+
+/* ---------- stage: wallpaper, mask, scroller ---------- */
+
+.stage {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.wallpaper {
+  position: absolute;
+  inset: 0;
+  background-image: var(--al-wallpaper);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+
+.wallpaperMask {
+  position: absolute;
+  inset: 0;
+  background: var(--dsw-alias-bg-base);
+  opacity: var(--al-wallpaper-mask, 0.35);
+  pointer-events: none;
+}
+
+.scroller {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 22px;
+  box-sizing: border-box;
+  scrollbar-color: var(--dsw-alias-scrollbar-thumb) transparent;
+}
+
+.scroller::-webkit-scrollbar {
+  width: var(--dsh-scrollbar-width, 10px);
+}
+
+.scroller::-webkit-scrollbar-thumb {
+  background: var(--dsw-alias-scrollbar-bg-l2);
+  border-radius: 999px;
+}
+
+.scroller::-webkit-scrollbar-thumb:hover {
+  background: var(--dsw-alias-scrollbar-hover-l2);
+}
+
+.gridSurface {
+  position: relative;
+  width: 100%;
+}
+
+/* ---------- card ---------- */
+
+.card {
+  --al-media-height: 180px;
+  --al-stagger: 0ms;
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--dsw-alias-border-l1);
+  border-radius: 14px;
+  background: var(--dsw-alias-bg-layer-1);
+  box-shadow: var(--dsw-shadow-lv1);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform var(--al-motion-hover) var(--ds-ease-in-out),
+    box-shadow var(--al-motion-hover) var(--ds-ease-in-out),
+    border-color var(--al-motion-hover) var(--ds-ease-in-out);
+  animation: al-card-in 190ms ease-out both;
+  animation-delay: var(--al-stagger);
+}
+
+/* The entrance is a plain fade-and-rise: no overshoot, so scrolling never
+   produces a wall of bouncing cards. */
+@keyframes al-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card:hover,
+.card:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: var(--dsw-shadow-lv3);
+  border-color: var(--dsw-alias-border-l2);
+  z-index: 2;
+}
+
+.card:focus-visible {
+  outline: 2px solid var(--dsw-alias-state-business-primary);
+  outline-offset: 2px;
+}
+
+/* Selection replaces the entrance animation with one short spring, because the
+   card is remounted on selection anyway (the masonry cell key carries it). */
+.cardSelected {
+  border-color: var(--dsw-alias-state-business-primary);
+  box-shadow: 0 0 0 2px var(--dsw-alias-state-business-primary), var(--dsw-shadow-lv2);
+  animation: al-select-pop var(--al-motion-pop) var(--al-spring) both;
+}
+
+@keyframes al-select-pop {
+  0% {
+    transform: scale(0.985);
+  }
+  55% {
+    transform: scale(1.022);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.cardMissing {
+  opacity: 0.64;
+}
+
+.media {
+  position: relative;
+  width: 100%;
+  height: var(--al-media-height);
+  flex: 0 0 auto;
+  background: var(--dsw-alias-fill-l2);
+  overflow: hidden;
+}
+
+/* The stored thumbnail: it reserves the card's height and stands in until the
+   full-resolution file arrives, and is also the final picture for every media
+   kind that has no original-image mode (video, audio, document, archive). */
+.mediaPlaceholder {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* The full-resolution layer for image assets; hidden until it has decoded, so a
+   slow disk read never shows a half-painted card. */
+.mediaImage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  opacity: 0;
+  transition: opacity 200ms var(--ds-ease-in-out);
+}
+
+.mediaImageReady {
+  opacity: 1;
+}
+
+.mediaFallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 28px;
+  color: var(--dsw-alias-label-quaternary);
+  background: var(--dsw-alias-fill-l2);
+}
+
+.mediaSkeleton {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    var(--dsw-alias-fill-l2) 30%,
+    var(--dsw-alias-interactive-bg-hover) 50%,
+    var(--dsw-alias-fill-l2) 70%
+  );
+  background-size: 220% 100%;
+  animation: al-shimmer 1.4s linear infinite;
+}
+
+@keyframes al-shimmer {
+  from {
+    background-position: 140% 0;
+  }
+  to {
+    background-position: -40% 0;
+  }
+}
+
+.durationBadge {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--dsw-alias-bg-mask-1);
+  color: var(--dsw-alias-label-primary-inverted);
+  font-size: var(--dsw-font-xxxs-11);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- corner badges ---------- */
+
+.cornerStack {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  z-index: 3;
+}
+
+.kindBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--dsw-alias-bg-mask-1);
+  color: var(--dsw-alias-label-primary-inverted);
+  font-size: var(--dsw-font-xxxs-11);
+  backdrop-filter: blur(4px);
+}
+
+.missingBadge {
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--dsw-alias-state-warn-primary);
+  color: var(--dsw-alias-state-warn-label);
+  font-size: var(--dsw-font-xxxs-11);
+}
+
+/* Why a card is not showing its original: oversized file, or a failed decode.
+   Opaque so it stays legible on any picture. */
+.sourceBadge {
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--dsw-alias-bg-layer-1);
+  border: 1px solid var(--dsw-alias-border-l2);
+  color: var(--dsw-alias-label-secondary);
+  font-size: var(--dsw-font-xxxs-11);
+}
+
+/* ---------- persistent card actions ---------- */
+
+.moreButton {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 4;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 50%;
+  padding: 0;
+  background: var(--dsw-alias-bg-layer-1);
+  color: var(--dsw-alias-label-primary);
+  font-size: var(--dsw-font-xxs-12);
+  line-height: 1;
+  cursor: pointer;
+  transition: transform var(--al-motion-pop) var(--al-spring), background 140ms var(--ds-ease-in-out);
+}
+
+.moreButton:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.moreButton:active {
+  transform: scale(0.9);
+}
+
+/* Favourite is a status mark here, not a control: the toggle lives in the menu
+   so it cannot be hit by accident while looking at the picture. */
+.statusStar {
+  position: absolute;
+  top: 10px;
+  right: 42px;
+  z-index: 3;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--dsw-alias-bg-layer-1);
+  border: 1px solid var(--dsw-alias-border-l2);
+  color: var(--dsw-static-amber-400);
+  font-size: var(--dsw-font-xxs-12);
+  line-height: 1;
+}
+
+/* ---------- selection tick ---------- */
+
+.selectTick {
+  position: absolute;
+  top: 10px;
+  right: 42px;
+  z-index: 5;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1.5px solid var(--dsw-alias-border-inverted);
+  background: var(--dsw-alias-state-business-primary);
+  color: var(--dsw-alias-label-primary-inverted);
+  font-size: 12px;
+  line-height: 1;
+  animation: al-select-pop var(--al-motion-pop) var(--al-spring) both;
+}
+
+/* ---------- footer ---------- */
+
+.footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  min-height: 24px;
+  box-sizing: content-box;
+}
+
+.name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: var(--dsw-font-xs-13);
+  color: var(--dsw-alias-label-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ratingStars {
+  flex: 0 0 auto;
+  color: var(--dsw-static-amber-500);
+  font-size: var(--dsw-font-xxxs-11);
+  letter-spacing: -1px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ratingStarsEmpty {
+  color: var(--dsw-alias-label-quaternary);
+}
+
+/* The one always-visible card action: opaque, bordered, high contrast. */
+.cardReference {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 9px;
+  border: 1px solid var(--dsw-alias-button-primary-fill);
+  border-radius: 8px;
+  background: var(--dsw-alias-button-primary-fill);
+  color: var(--dsw-alias-label-primary-foreground);
+  font-family: inherit;
+  font-size: var(--dsw-font-xxxs-11);
+  line-height: 1.4;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform var(--al-motion-pop) var(--al-spring), background 140ms var(--ds-ease-in-out);
+}
+
+.cardReference:hover {
+  background: var(--dsw-alias-button-primary-hover);
+}
+
+.cardReference:active {
+  transform: scale(0.94);
+}
+
+/* ---------- hover control board ---------- */
+
+/* No full-image veil: a bottom gradient carries the metadata, and the controls
+   sit on an opaque board so they stay readable over any picture.
+   The container never takes pointer events — only the board does — so the
+   always-visible corner button stays clickable while the board is open. */
+.veil {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  opacity: 0;
+  transition: opacity 160ms var(--ds-ease-in-out);
+  pointer-events: none;
+}
+
+.card:hover .veil,
+.card:focus-within .veil {
+  opacity: 1;
+}
+
+.veilGradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, var(--dsw-alias-bg-mask-drop) 0%, transparent 58%);
+}
+
+.veilPanel {
+  position: relative;
+  margin: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 9px 10px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 10px;
+  background: var(--dsw-alias-bg-overlay);
+  color: var(--dsw-alias-label-primary);
+  box-shadow: var(--dsw-shadow-lv2);
+  pointer-events: auto;
+}
+
+.veilMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  color: var(--dsw-alias-label-secondary);
+  font-size: var(--dsw-font-xxxs-11);
+}
+
+.veilMetaRow {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.veilMetaKey {
+  flex: 0 0 auto;
+  opacity: 0.75;
+  min-width: 34px;
+}
+
+.veilMetaValue {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.veilTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-height: 42px;
+  overflow: hidden;
+}
+
+.veilTag {
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  font-size: var(--dsw-font-xxxs-11);
+  color: var(--dsw-alias-label-secondary);
+  white-space: nowrap;
+}
+
+.veilActions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Opaque neutral surface, visible border, foreground label — readable on a white
+   wall, a dark wall, and a busy photograph alike. */
+.veilAction {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 7px;
+  min-width: 26px;
+  padding: 3px 8px;
+  background: var(--dsw-alias-bg-layer-1);
+  color: var(--dsw-alias-label-primary);
+  font-family: inherit;
+  font-size: var(--dsw-font-xxxs-11);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform var(--al-motion-pop) var(--al-spring), background 140ms var(--ds-ease-in-out);
+}
+
+.veilAction:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.veilAction:active {
+  transform: scale(0.92);
+}
+
+/* Rating is a readout while the card is at rest, and a control on the board. */
+.ratingOverlay {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  z-index: 3;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--dsw-alias-bg-mask-1);
+  color: var(--dsw-static-amber-400);
+  font-size: var(--dsw-font-xxxs-11);
+  letter-spacing: -1px;
+}
+
+.veilActionOn {
+  border-color: var(--dsw-alias-state-business-primary);
+  color: var(--dsw-static-amber-500);
+}
+
+/* ---------- motion utilities ---------- */
+
+.card,
+.media,
+.veil,
+.veilAction,
+.cardReference,
+.moreButton,
+.selectTick {
+  --al-spring: cubic-bezier(0.2, 0.9, 0.25, 1.2);
+  --al-motion-pop: 190ms;
+  --al-motion-hover: 160ms;
+}
+
+/* ---------- reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .card:hover,
+  .card:focus-visible,
+  .cardSelected,
+  .selectTick {
+    animation: none;
+    transition: none;
+    transform: none;
+  }
+
+  .mediaImage,
+  .veil,
+  .veilAction,
+  .cardReference,
+  .moreButton {
+    transition: none;
+  }
+
+  .mediaSkeleton {
+    animation: none;
+  }
+}
